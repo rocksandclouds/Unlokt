@@ -1,12 +1,28 @@
 # FingerprintDoorbell
 
+Fork from https://github.com/frickelzeugs/FingerprintDoorbell with some updates
+
+OTA-Firmware upload with (Async) ElegantOTA not working because of library incompabilities
+
+Changes from TheMaskedDeveloper:
+- color and sequenze configurable in web interface 
+- MQTT port configurable
+- color for scan/match configurable in web interface
+
+Other changes:
+- Web password configurable
+- Timezone configurable
+- Uptime in status bar
+- door opener pin on GPIO 23
+
+
 ## What is FingerprintDoorbell?
 It's more or less a doorbell with the ability to scan finger prints or a fingerprint reader with the ability to act as doorbell, depending on your perspective ;-). But lets speak some images:
 
-<img  src="https://raw.githubusercontent.com/frickelzeugs/FingerprintDoorbell/master/doc/images/doorbell-sample.jpg"  width="400">
+<img  src="https://raw.githubusercontent.com/geronet1/FingerprintDoorbell/master/doc/images/doorbell-sample.jpg"  width="400">
 
-<img  src="https://raw.githubusercontent.com/frickelzeugs/FingerprintDoorbell/master/doc/images/web-manage.png"  width="600">
-<img  src="https://raw.githubusercontent.com/frickelzeugs/FingerprintDoorbell/master/doc/images/web-settings.png"  width="600">
+<img  src="https://raw.githubusercontent.com/geronet1/FingerprintDoorbell/master/doc/images/web-manage.png"  width="600">
+<img  src="https://raw.githubusercontent.com/geronet1/FingerprintDoorbell/master/doc/images/web-settings.png"  width="600">
 
 ## How does it work?
 If you put your finger on the sensor the system looks for a matching fingerprint. If it doesn't find one, it rings the bell (MQTT message is published and an GPIO pin is set to high). If a match was found, the matching finger ID together with a name and confidence will be published as MQTT messagage. In combination with a home automation solution (like OpenHAB, ioBroker, Home Assistant...) you can then trigger your door opener or smart lock. You can also define actions depending on the finger that was detected, like left thumb opens front door, right thumb opens garage, middle finger...
@@ -19,13 +35,13 @@ If you put your finger on the sensor the system looks for a matching fingerprint
 
 # How to build the hardware
 ## Wiring
-<img  src="https://raw.githubusercontent.com/frickelzeugs/FingerprintDoorbell/master/doc/images/wiring.png"  >
+<img  src="https://raw.githubusercontent.com/geronet1/FingerprintDoorbell/master/doc/images/wiring.png"  >
 
 I would not solder the cables directly to the ESP32 but recommend using a connector between ESP32 and Sensor. Otherwise, the cables must first be fed through the 25mm hole for the sensor and then soldered on. Replacing the Sensor will be a pain then. The original plug used on the sensor is a 6-pin Micro JST SH 1.00mm but it'll be fine to use any other 6-pin connector that you have on hand if you replace both sides.
 
 Just as an inpiration:
 
-<img  src="https://raw.githubusercontent.com/frickelzeugs/FingerprintDoorbell/master/doc/images/esp32-shield.jpg"  width="300">
+<img  src="https://raw.githubusercontent.com/geronet1/FingerprintDoorbell/master/doc/images/esp32-shield.jpg"  width="300">
 
 I made a small shield board for the ESP32 mini that contains a 6 pin Micro JST SH 1.00mm socket, a DC-DC step down converter and some screw terminals for the power supply (in my case 24V DC). So I'm now able to easily replace the sensor or ESP32 without touching my soldering iron.
 
@@ -51,12 +67,12 @@ Now that esptool.py is available you can continue to flash the firmware. To star
 - boot_app0.bin
 - partitions.bin
 
-download [here](https://raw.githubusercontent.com/frickelzeugs/FingerprintDoorbell/master/doc/bootloader.zip)
+download [here](https://raw.githubusercontent.com/geronet1/FingerprintDoorbell/master/doc/bootloader.zip)
 
 - firmware.bin
 - spiffs.bin
 
-contained in the [Release packages](https://github.com/frickelzeugs/FingerprintDoorbell/releases)
+contained in the [Release packages](https://github.com/geronet1/FingerprintDoorbell/releases)
 
 ### Flashing
 Copy all 5 files in a local folder, open your command line/shell, navigate to this folder and execute:
@@ -128,38 +144,40 @@ If no WiFi settings are configured (e.g. on a fresh install) the device will aut
 
 When in WiFi config mode FingerprintDoorbell will act as an AccessPoint an creates it's own Network with the Name "FingerprintDoorbell-Config". Connect to this network with your PC/Mobile and Password "12345678". You should then get a "captive portal" notification, which you should bring you to the browser with the WiFi config already open. If the captive portal thing does not work please open a browser manually and visit "http://192.168.4.1".
 
-<img  src="https://raw.githubusercontent.com/frickelzeugs/FingerprintDoorbell/master/doc/images/web-wificonfig.png"  width="300">
+<img  src="https://raw.githubusercontent.com/geronet1/FingerprintDoorbell/master/doc/images/web-wificonfig.png"  width="300">
 
 Enter your settings and click "Save and restart" to bring the device back to normal operation mode. If everything had worked the LED ring should first flash blue while bootup and starts breathing blue if connection to your WiFi is running. When connected to your WiFi the WebUI of Fingerprintdoorbell should be available under http://fingerprintdoorbell (if you used the default hostname in WiFi configuration). Now you can start enrolling ("teaching") your fingerprints.
 
 ## Managing fingerprints
 The sensor has the capacity for storing up to 200 fingerprints. Theses memory slots are used as ID together with a name to increase human readability. To enroll new fingerprints enter a ID and name (optional) in the "Add/Replace fingerprint" section and click "Start enrollment". Now the system asks you to place and lift your finger to the sensor for 5 times. The 5 passes of scanning helps the sensor to improve its recognition rate. Don't try to vary your placing/position too much, because the enrollment process may fail if the 5 preceeding scans differ too much from each other and cannot be combined to one fingerprint template.
 
-<img  src="https://raw.githubusercontent.com/frickelzeugs/FingerprintDoorbell/master/doc/images/web-manage.png"  width="300">
+<img  src="https://raw.githubusercontent.com/geronet1/FingerprintDoorbell/master/doc/images/web-manage.png"  width="300">
 
 If enrollment has completed successfull you can now test if your fingerprint matches.
 
 ## Configure MQTT connection
 Matching fingerprints (and also ring events) are published as messages to your MQTT broker at certain topics. For this you will have to configure your MQTT Broker settings in FingerprintDoorbell. If your broker does not need authentification by username and password just leave this fields empty. You can also specify a custom root topic under which FingerprintDoorbell publishes its messages or leave the default "fingerprintDoorbell" if you're fine with that.
 
-<img  src="https://raw.githubusercontent.com/frickelzeugs/FingerprintDoorbell/master/doc/images/web-settings.png"  width="300">
+<img  src="https://raw.githubusercontent.com/geronet1/FingerprintDoorbell/master/doc/images/web-settings.png"  width="300">
 
 | MQTT Topic                           | Action    | Values | 
 | ------------------------------------ | --------- | -------- |
+| fingerprintDoorbell/LWT              | publish   | last will testament, "Online" or "Offline" |
 | fingerprintDoorbell/ring             | publish   | "off" by default, on a ring event switching to "on" for 1s |
 | fingerprintDoorbell/matchId          | publish   | "-1" by default, if a match was found the value holds the matching id (e.g. "27") for 3s |
 | fingerprintDoorbell/matchName        | publish   | "" by default, if a match was found the value holds the matching name for 3s |
 | fingerprintDoorbell/matchConfidence  | publish   | "" by default, if a match was found the value holds the conficence (number between "1" and "400", 1=low, 400=very high) for 3s |
+| fingerprintDoorbell/openDoor              | subscribe   | open the door with GPIO 23 |
 | fingerprintDoorbell/ignoreTouchRing  | subscribe | read by FingerprintDoorbell and enables/disables the touch ring (see FAQ below for details) |
 
 ## Advanced Actions
-### Firmware Update
-If you've managed to walk the bumpy path of flashing the firmware on the ESP32 for the first time, dont't worry: every further firmware update will be a piece of cake. FingerprintDoorbell is using the really cool Library [AsyncElegantOTA](https://github.com/ayushsharma82/AsyncElegantOTA) to make this as handy as possible. You don't even have to pull the microcontroller out of the wall and connect it to your computer, because the "OTA" in "AsyncElegantOTA" is for "Over-the-air" updates. All you need to do is to browse to the settings page of the WebUI and hit "Firmware update". In the following Dialog you have to upload 2 files
+### Firmware Update  <-- not working
+~~If you've managed to walk the bumpy path of flashing the firmware on the ESP32 for the first time, dont't worry: every further firmware update will be a piece of cake. FingerprintDoorbell is using the really cool Library [AsyncElegantOTA](https://github.com/ayushsharma82/AsyncElegantOTA) to make this as handy as possible. You don't even have to pull the microcontroller out of the wall and connect it to your computer, because the "OTA" in "AsyncElegantOTA" is for "Over-the-air" updates. All you need to do is to browse to the settings page of the WebUI and hit "Firmware update". In the following Dialog you have to upload 2 files~~
 
 - firmware.bin for the "Firmware" radio button
 - spiffs.bin for the "Filesystem" radio button
 
-Done. Reboot your system to get the new firmware live.
+~~Done. Reboot your system to get the new firmware live.~~
 
 ### Pairing a new Sensor
 For security reasons the ESP32 and Sensor will be coupled together, so if the sensor is replaced (e.g. an attackers connects his own sensor to the ESP32 with his fingerprints on it) this will be detected. In this case the pairing will be marked as broken and no further match events are sent by MQTT from now on (even if you connect the old sensor again). But keep calm, the doorbell function will still continue to work and ring events are sent by MQTT so you don't miss your long awaited package delivery. You'll see an error message in the log window that requests you to renew the pairing. If the sensor replacement was done by yourself or no attack took place please choose the option "Pairing a new Sensor" to pair the sensor with the ESP32.

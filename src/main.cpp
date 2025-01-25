@@ -132,6 +132,24 @@ String getUptimeString()
   return uptime;
 }
 
+String splitIpAndPort(String mqttServerConfigString, u16_t &mqttPort)
+{
+  String mqttHostname;
+  s8_t positionOfColon = mqttServerConfigString.indexOf(":");
+
+  if (positionOfColon >= 0)
+  {
+    mqttHostname = mqttServerConfigString.substring(0, positionOfColon);
+    mqttPort = mqttServerConfigString.substring(positionOfColon + 1).toInt();
+  }
+  else
+  {
+    mqttHostname = mqttServerConfigString;
+    mqttPort = 1883;
+  }
+  return mqttHostname;
+}
+
 /* wait for maintenance mode or timeout 5s */
 bool waitForMaintenanceMode()
 {
@@ -168,6 +186,100 @@ String processor(const String &var)
   else if (var == "VERSIONINFO")
   {
     return VersionInfo;
+  }
+  else if (var == "IP_ADDRESS")
+  {
+    return WiFi.localIP().toString();
+  }
+  else if (var == "MAC_ADDRESS")
+  {
+    return WiFi.macAddress();
+  }
+  else if (var == "SSID")
+  {
+    return WiFi.SSID();
+  }
+  else if (var == "BSSID")
+  {
+    return WiFi.BSSIDstr();
+  }
+  else if (var == "WIFI_CHANNEL")
+  {
+    return String(WiFi.channel());
+  }
+  else if (var == "RSSI")
+  {
+    return String(WiFi.RSSI()) + " dBm";
+  }
+  else if (var == "GATEWAY")
+  {
+    return WiFi.gatewayIP().toString();
+  }
+  else if (var == "DNS_SERVER")
+  {
+    return WiFi.dnsIP().toString();
+  }
+  else if (var == "MQTT_SERVER_IP")
+  {
+    IPAddress mqttServerIp;
+    u16_t mqttPort;
+    String mqttHostname = splitIpAndPort(settingsManager.getAppSettings().mqttServer, mqttPort);
+    if (WiFi.hostByName(mqttHostname.c_str(), mqttServerIp))
+    {
+      return mqttServerIp.toString();
+    }
+  }
+  else if (var == "CHIP")
+  {
+    esp_chip_info_t chip_info;
+    esp_chip_info(&chip_info);
+    return String(ESP.getChipModel()) + String(" rev:") + String(chip_info.revision);
+  }
+  else if (var == "CPU")
+  {
+    esp_chip_info_t chip_info;
+    esp_chip_info(&chip_info);
+    return String(ESP.getCpuFreqMHz()) + String(" Mhz ") + String(chip_info.cores) + String(" Core(s)");
+  }
+  else if (var == "CHIP_TEMP")
+  {
+    return String(round(temperatureRead() * 10) / 10) + String(" °C");
+  }
+  else if (var == "FLASH_SIZE")
+  {
+    return String(ESP.getFlashChipSize());
+  }
+  else if (var == "FREE_HEAP")
+  {
+    return String(ESP.getFreeHeap());
+  }
+  else if (var == "RESET_REASON")
+  {
+    switch (esp_reset_reason())
+    {
+      case ESP_RST_UNKNOWN:
+          return String("Unknown");
+      case ESP_RST_POWERON:
+          return String("Power on");
+      case ESP_RST_EXT:
+          return String("External");
+      case ESP_RST_SW:
+          return String("Software");
+      case ESP_RST_PANIC:
+          return String("Panic");
+      case ESP_RST_INT_WDT:
+          return String("Interrupt Watchdog");
+      case ESP_RST_TASK_WDT:
+          return String("Task Watchdog");
+      case ESP_RST_WDT:
+          return String("Watchdog");
+      case ESP_RST_DEEPSLEEP:
+          return String("Deepsleep");
+      case ESP_RST_BROWNOUT:
+          return String("Brownout");
+      case ESP_RST_SDIO:
+          return String("SDIO");
+    }
   }
   else if (var == "UPTIME")
   {
@@ -582,6 +694,16 @@ void startWebserver()
         request->send(SPIFFS, "/settings.html", String(), false, processor);
       } });
 
+    webServer.on("/system", HTTP_GET, [](AsyncWebServerRequest *request)
+                 {
+      if (!settingsManager.getAppSettings().webPassword.isEmpty())
+      {
+        if(!request->authenticate(webServerUser, settingsManager.getAppSettings().webPassword.c_str()))
+          return request->requestAuthentication();
+      }
+      request->send(SPIFFS, "/system.html", String(), false, processor);
+      });
+
     webServer.on("/pairing", HTTP_GET, [](AsyncWebServerRequest *request)
                  {
       if (!settingsManager.getAppSettings().webPassword.isEmpty())
@@ -882,24 +1004,6 @@ void reboot()
   webServer.end();
   WiFi.disconnect();
   ESP.restart();
-}
-
-String splitIpAndPort(String mqttServerConfigString, u16_t &mqttPort)
-{
-  String mqttHostname;
-  s8_t positionOfColon = mqttServerConfigString.indexOf(":");
-
-  if (positionOfColon >= 0)
-  {
-    mqttHostname = mqttServerConfigString.substring(0, positionOfColon);
-    mqttPort = mqttServerConfigString.substring(positionOfColon + 1).toInt();
-  }
-  else
-  {
-    mqttHostname = mqttServerConfigString;
-    mqttPort = 1883;
-  }
-  return mqttHostname;
 }
 
 void setup()

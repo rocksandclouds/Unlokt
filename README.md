@@ -13,7 +13,13 @@ Other changes:
 - Web password configurable
 - Timezone configurable
 - Uptime in status bar
-- door opener pin on GPIO 23
+- door opener pin on GPIO 23, triggerable with MQTT
+- MQTT last will testament
+
+Wishlist / Todo:
+- make GPIOs configurable
+- at startup if there are fingerprints saved on the sensor we don't know give them a number in the list
+- status web site with lots of info
 
 
 ## What is FingerprintDoorbell?

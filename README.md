@@ -13,7 +13,8 @@ Other changes:
 - Web password configurable
 - Timezone configurable
 - Uptime in status bar
-- door opener pin on GPIO 23
+- door opener pin on GPIO 23, triggerable with MQTT
+- MQTT last will testament
 
 Wishlist / Todo:
 - make GPIOs configurable

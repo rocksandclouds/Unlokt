@@ -15,6 +15,11 @@ Other changes:
 - Uptime in status bar
 - door opener pin on GPIO 23
 
+Wishlist / Todo:
+- make GPIOs configurable
+- at startup if there are fingerprints saved on the sensor we don't know give them a number in the list
+- status web site with lots of info
+
 
 ## What is FingerprintDoorbell?
 It's more or less a doorbell with the ability to scan finger prints or a fingerprint reader with the ability to act as doorbell, depending on your perspective ;-). But lets speak some images:

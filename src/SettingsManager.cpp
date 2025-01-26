@@ -66,6 +66,7 @@ void SettingsManager::saveAppSettings()
     preferences.putString("mqttPassword", appSettings.mqttPassword);
     preferences.putString("mqttRootTopic", appSettings.mqttRootTopic);
     preferences.putString("ntpServer", appSettings.ntpServer);
+    preferences.putString("timezone", appSettings.timezone);
     preferences.putString("sensorPin", appSettings.sensorPin);
     preferences.putString("pairingCode", appSettings.sensorPairingCode);
     preferences.putBool("pairingValid", appSettings.sensorPairingValid);

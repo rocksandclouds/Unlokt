@@ -6,6 +6,7 @@
 #include <DNSServer.h>
 #include <time.h>
 #include <ESPAsyncWebServer.h>
+#include <ESPAsyncHTTPUpdateServer.h>
 #include <SPIFFS.h>
 #include <PubSubClient.h>
 #include "FingerprintManager.h"
@@ -64,8 +65,10 @@ bool needMaintenanceMode = false;
 
 const byte DNS_PORT = 53;
 DNSServer dnsServer;
+ESPAsyncHTTPUpdateServer updateServer;
 AsyncWebServer webServer(80);       // AsyncWebServer  on port 80
 AsyncEventSource events("/events"); // event source (Server-Sent events)
+
 
 const char *webServerUser = "admin"; // User name for authentication
 #define MQTT_LWT_TOPIC "LWT"
@@ -788,8 +791,14 @@ void startWebserver()
                { request->send(SPIFFS, "/bootstrap.min.css", "text/css"); });
 
 
+
   // Start server
+  updateServer.setup(&webServer);
   webServer.begin();
+  if (settingsManager.getAppSettings().webPassword.isEmpty())
+    updateServer.setup(&webServer, "/update");
+  else
+    updateServer.setup(&webServer, "/update", webServerUser, settingsManager.getAppSettings().webPassword.c_str());
 
   notifyClients("System booted successfully!");
 }

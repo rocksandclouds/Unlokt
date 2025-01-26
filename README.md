@@ -2,7 +2,7 @@
 
 Fork from https://github.com/frickelzeugs/FingerprintDoorbell with some updates
 
-OTA-Firmware upload with (Async) ElegantOTA not working because of library incompabilities
+~~OTA-Firmware upload with (Async) ElegantOTA not working because of library incompabilities~~ <- using ESPAsyncHTTPUpdateServer now
 
 Changes from TheMaskedDeveloper:
 - color and sequenze configurable in web interface 
@@ -15,11 +15,13 @@ Other changes:
 - Uptime in status bar
 - door opener pin on GPIO 23, triggerable with MQTT
 - MQTT last will testament
+- Status web site with lots of info
+- OTA with ESPAsyncHTTPUpdateServer
 
 Wishlist / Todo:
 - make GPIOs configurable
 - at startup if there are fingerprints saved on the sensor we don't know give them a number in the list
-- status web site with lots of info
+
 
 
 ## What is FingerprintDoorbell?

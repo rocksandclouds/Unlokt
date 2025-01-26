@@ -273,7 +273,7 @@ void FingerprintManager::loadFingerListFromPrefs()
 // Add/Enroll fingerprint
 NewFinger FingerprintManager::enrollFinger(int id, String name)
 {
-
+  const int maxTimeout = 20; // sec
   NewFinger newFinger;
   newFinger.enrollResult = EnrollResult::error;
 
@@ -284,6 +284,7 @@ NewFinger FingerprintManager::enrollFinger(int id, String name)
   // Repeat n times to get better resulting templates (as stated in R503 documentation up to 6 combined image samples possible, but I got an communication error when trying more than 5 samples, so dont go >5)
   for (int nTimes = 1; nTimes <= 5; nTimes++)
   {
+    int timeout = 0;
     notifyClients(String("Take #" + String(nTimes)) + " (place your finger on the sensor until led ring stops flashing, then remove it).");
 
     if (nTimes != 1) // not on first run
@@ -310,6 +311,13 @@ NewFinger FingerprintManager::enrollFinger(int id, String name)
         Serial.print("taken, ");
         break;
       case FINGERPRINT_NOFINGER:
+        delay(100);
+        timeout++;
+        if (timeout > maxTimeout*10)
+        {
+          Serial.println("no finger, timeout!");
+          return newFinger;
+        }
         break;
       case FINGERPRINT_PACKETRECIEVEERR:
         Serial.print("Communication error, ");

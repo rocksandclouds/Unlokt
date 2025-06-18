@@ -11,6 +11,7 @@
 #include <PubSubClient.h>
 #include "FingerprintManager.h"
 #include "SettingsManager.h"
+#include "tone.h"
 #include "global.h"
 
 enum class Mode
@@ -886,6 +887,7 @@ void connectMqttClient()
     {
       // success
       Serial.println("connected");
+      tone(2000, 200); // play a tone to indicate success
       // LWT publish
       mqttClient.publish((settingsManager.getAppSettings().mqttRootTopic + "/" + MQTT_LWT_TOPIC).c_str(), MQTT_LWT_PAYLOAD_ONLINE, MQTT_LWT_RETAIN);
       // Subscribe
@@ -968,6 +970,8 @@ void doScan()
       Serial.println("MQTT message sent: ring the bell!");
       delay(1000);
       digitalWrite(doorbellOutputPin, LOW);
+      tone(600, 150);
+      tone(400, 200);
     }
     else
     {

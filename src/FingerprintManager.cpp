@@ -1,4 +1,5 @@
 #include "FingerprintManager.h"
+#include "tone.h"
 #include "global.h"
 
 #include <Adafruit_Fingerprint.h>
@@ -225,6 +226,10 @@ Match FingerprintManager::scanFingerprint()
       match.matchId = finger.fingerID;
       match.matchConfidence = finger.confidence;
       match.matchName = fingerList[finger.fingerID];
+
+      tone(1000, 120);
+      tone(1500, 120);
+
     }
     else if (match.returnCode == FINGERPRINT_PACKETRECIEVEERR)
     {
